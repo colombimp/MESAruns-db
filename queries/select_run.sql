@@ -1,0 +1,1 @@
+SELECT * FROM controls WHERE mesarun = 0;
