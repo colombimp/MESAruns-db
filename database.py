@@ -1,30 +1,29 @@
 import sqlite3
 
-# creamos la DB en el archivo mesa.db
-conn = sqlite3.connect('mesa.db')
+def create_db(db_name: str, data_dict):
+    # creamos la DB
+    conn = sqlite3.connect(db_name+".db")
+    c = conn.cursor()
 
-# creamos un cursor: con esto nos conectamos a la DB
-c = conn.cursor()
+    dtype_map = { # conversion de dtypes de python a sqlite
+        None: "NULL",
+        int: "INTEGER",
+        float: "REAL",
+        str: "TEXT",
+        bytes: "BLOB",
+        bool: "INTEGER",
+        }
 
-# creamos una tabla ejecutando un comando SQLite. OJO: es case sensitive
-c.execute("""CREATE TABLE mesaruns (
-    run_id INTEGER
-)
-""")
+    for table_name, table_values in data_dict.items():
+        command = f"CREATE TABLE {table_name.lower()} ( "
+        for key, value in table_values.items():
+            command += str(key) + " " + dtype_map[type(value)] + ", "  # TODO: revisar los datatypes, de ultima hardcodear
+        command += ");"
+        #print(command)
+        c.execute(command)
+    # guardamos todo en la DB
+    conn.commit()
 
-# lo que necesites poner True or False ponelo como un entero 1 (True) o 0 (False)
-c.execute("""CREATE TABLE controls (
-    mesarun INTEGER,
-    alpha_semiconvection REAL,
-    log_directory TEXT,
-    thermohaline_coeff REAL,
-    use_Ledoux_criterion INTEGER,
-    use_other_wind INTEGER
-    )""")
+    #cerramos la conexion
+    conn.close()
 
-
-# guardamos todo en la DB
-conn.commit()
-
-#cerramos la conexion
-conn.close()
